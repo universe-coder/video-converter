@@ -1,0 +1,73 @@
+name: Build installers
+
+# Builds the desktop installers and, when a GitHub Release is published,
+# attaches them to that release. Can also be run manually (workflow_dispatch),
+# in which case the installers are available as workflow artifacts only.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+# Needed so the workflow can upload assets to the release.
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS: build x64 on an Intel runner so the single DMG runs on both
+          # Intel Macs (natively) and Apple Silicon (via Rosetta). ffmpeg-static
+          # only ships one arch per install, and the mac artifactName has no arch
+          # suffix, so we produce one DMG. Switch to `macos-latest` for a native
+          # arm64 build instead.
+          - os: macos-13
+            label: macOS (dmg)
+            build: npm run dist:mac
+            artifacts: dist/*.dmg
+            artifact_name: macos-dmg
+          # Windows: `dist:win` builds x64 and ia32 in turn, fetching the matching
+          # ffmpeg binary for each arch via scripts/fetch-ffmpeg.js.
+          - os: windows-latest
+            label: Windows (x64 + ia32)
+            build: npm run dist:win
+            artifacts: dist/*.exe
+            artifact_name: windows-installers
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build installers
+        run: ${{ matrix.build }}
+        env:
+          # No Apple signing certificate on CI — build unsigned instead of
+          # letting electron-builder try (and fail) to auto-discover an identity.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifacts }}
+          if-no-files-found: error
+
+      - name: Attach installers to the release
+        if: github.event_name == 'release'
+        shell: bash
+        run: gh release upload "${{ github.event.release.tag_name }}" ${{ matrix.artifacts }} --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
