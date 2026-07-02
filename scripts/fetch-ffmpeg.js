@@ -37,7 +37,13 @@ const target = `${platform || process.platform}-${arch || process.arch}`;
 console.log(`→ Загрузка ffmpeg-static для ${target}…`);
 
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-execFileSync(npm, ['rebuild', 'ffmpeg-static'], { stdio: 'inherit', env });
+// На Windows запуск .cmd-файла (npm.cmd) без shell бросает EINVAL начиная с
+// Node 18.20.2 / 20.12.2 (фикс CVE-2024-27980), поэтому включаем shell.
+execFileSync(npm, ['rebuild', 'ffmpeg-static'], {
+  stdio: 'inherit',
+  env,
+  shell: process.platform === 'win32',
+});
 
 // Проверяем, что бинарник на месте.
 const expected = path.join(pkgDir, platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
