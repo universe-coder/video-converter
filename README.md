@@ -1,125 +1,138 @@
 # Video Converter
 
-Кроссплатформенное десктоп-приложение (Windows и macOS) для конвертации видео из
-одного формата в другой. Построено на **Electron + FFmpeg**. FFmpeg поставляется
-внутри приложения — пользователю ничего доустанавливать не нужно.
+**English** · [Русский](README.ru.md) · [Українська](README.uk.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [中文](README.zh.md)
 
-![UI](assets/icon.svg)
+Cross-platform desktop app (Windows and macOS) for converting video from one
+format to another. Built with **Electron + FFmpeg**. FFmpeg ships inside the
+app — the user does not need to install anything extra.
 
-## Возможности
+![Video Converter](assets/icon.svg)
 
-- Перетаскивание файлов или выбор через диалог, пакетная конвертация (очередь).
-- Форматы вывода:
-  - **Видео:** MP4 (H.264), MKV, MOV, WebM (VP9), AVI (MPEG-4)
-  - **Аудио:** MP3, M4A (AAC), WAV
-  - **GIF-анимация** из видео
-- Пресеты качества (высокое / среднее / низкое) и изменение разрешения
-  (до 4K, 1080p, 720p, 480p, 360p) с сохранением пропорций.
-- Прогресс по каждому файлу, отмена, кнопка «Показать в папке».
-- Выбор папки сохранения (по умолчанию — рядом с оригиналом, без перезаписи исходника).
-- **Многоязычный интерфейс** — 8 языков (русский, English, Українська, Deutsch,
-  Français, Español, Português, 中文) с автоопределением языка системы.
-- **Светлая и тёмная темы** — автоопределение системной темы и принудительный выбор
-  (Системная / Светлая / Тёмная); выбор языка и темы сохраняются между запусками.
+## Features
 
-## Запуск в режиме разработки
+- Drag and drop files or pick them via a dialog; batch conversion (queue).
+- Output formats:
+  - **Video:** MP4 (H.264), MKV, MOV, WebM (VP9), AVI (MPEG-4)
+  - **Audio:** MP3, M4A (AAC), WAV
+  - **GIF animation** from video
+- Quality presets (high / medium / low) and resolution scaling
+  (up to 4K, 1080p, 720p, 480p, 360p) with aspect ratio preserved.
+- Per-file progress, cancellation, and a “Show in folder” button.
+- Output folder selection (defaults to next to the original, without
+  overwriting the source file).
+- **Multilingual interface** — 8 languages (Русский, English, Українська,
+  Deutsch, Français, Español, Português, 中文) with automatic system-language
+  detection.
+- **Light and dark themes** — automatic system-theme detection plus a manual
+  override (System / Light / Dark); the language and theme choices persist
+  between launches.
+
+## Running in development
 
 ```bash
 cd video-converter
 npm install
-npm start          # или npm run dev — с DevTools
+npm start          # or npm run dev — with DevTools
 ```
 
-> При первом `npm install` скачиваются бинарники Electron и FFmpeg (~200 МБ).
+> On the first `npm install`, the Electron and FFmpeg binaries are downloaded
+> (~200 MB).
 
-## Проверка ядра конвертации (без GUI)
+## Testing the conversion core (no GUI)
 
-Генерирует тестовое видео и прогоняет его через все форматы:
+Generates a test video and runs it through every format:
 
 ```bash
 npm run smoke
 ```
 
-## Сборка установщиков
+## Building installers
 
 ```bash
 npm run dist:mac        # → dist/Video Converter-1.0.0.dmg
-npm run dist:win        # x64 и ia32 по очереди, затем ff:restore
-npm run dist:win-x64    # только 64-бит:  …-win-x64-Setup.exe
-npm run dist:win-ia32   # только 32-бит:  …-win-ia32-Setup.exe
-npm run pack            # распакованная сборка в dist/ (быстрая проверка)
+npm run dist:win        # x64 and ia32 in turn, then ff:restore
+npm run dist:win-x64    # 64-bit only:  …-win-x64-Setup.exe
+npm run dist:win-ia32   # 32-bit only:  …-win-ia32-Setup.exe
+npm run pack            # unpacked build in dist/ (quick check)
 ```
 
-### Архитектуры Windows
+### Windows architectures
 
-| Арх. | Поддержка | Примечание |
-|------|-----------|------------|
-| **x64** | ✅ | основная цель — 64-бит Intel/AMD |
-| **ia32** | ✅ | 32-бит Windows (сейчас редкость) |
-| **arm64** | ❌ | у `ffmpeg-static`/`ffprobe-static` нет бинарников под Windows-ARM; ARM-устройства запускают x64-сборку через встроенную эмуляцию |
+| Arch | Support | Note |
+|------|---------|------|
+| **x64** | ✅ | primary target — 64-bit Intel/AMD |
+| **ia32** | ✅ | 32-bit Windows (rare nowadays) |
+| **arm64** | ❌ | `ffmpeg-static`/`ffprobe-static` have no Windows-ARM binaries; ARM devices run the x64 build through built-in emulation |
 
-**Важно про FFmpeg и per-arch сборку.** `ffmpeg-static` хранит только **один**
-бинарник — под ту машину, где выполнялся `npm install`. Поэтому перед сборкой под
-другую архитектуру нужно подкачать соответствующий `ffmpeg.exe`. Это делает скрипт
-`scripts/fetch-ffmpeg.js`, который уже вызывается внутри `dist:win-*`. После
-кросс-сборки на не-Windows машине верните нативный бинарник командой
-`npm run ff:restore` (в `npm run dist:win` это происходит автоматически в конце).
-`ffprobe-static` трогать не нужно — он уже содержит бинарники всех платформ.
+**Important note on FFmpeg and per-arch builds.** `ffmpeg-static` stores only
+**one** binary — for the machine where `npm install` ran. So before building for
+a different architecture you need to fetch the matching `ffmpeg.exe`. This is
+handled by the `scripts/fetch-ffmpeg.js` script, which is already invoked inside
+`dist:win-*`. After a cross-build on a non-Windows machine, restore the native
+binary with `npm run ff:restore` (in `npm run dist:win` this happens
+automatically at the end). `ffprobe-static` does not need touching — it already
+contains binaries for every platform.
 
-**Где собирать.** Кросс-сборка Windows-установщика на macOS работает (проверено:
-`npm run dist:win-x64` собирает `.exe` без Wine). На самой Windows тоже удобно — там
-`npm install` сразу тянет нужный ffmpeg. Единственная тонкость кросс-сборки — свежий
-ffmpeg под целевую арх. (см. выше про `fetch-ffmpeg.js`).
+**Where to build.** Cross-building the Windows installer on macOS works (tested:
+`npm run dist:win-x64` builds the `.exe` without Wine). Building on Windows
+itself is also convenient — there `npm install` pulls the right ffmpeg straight
+away. The only subtlety of cross-building is a fresh ffmpeg for the target arch
+(see above about `fetch-ffmpeg.js`).
 
-### ⚠️ Версия electron-builder закреплена (24.13.1)
+### ⚠️ electron-builder version is pinned (24.13.1)
 
-**Не обновляйте `electron-builder` до 24.13.2+ без проверки переустановки.**
-В 24.13.2 появилась регрессия (PR #8059): при переустановке поверх старой версии
-установщик зацикливается на «*… cannot be closed / Не удалось закрыть приложение*»,
-даже когда приложение закрыто и в Диспетчере задач ничего нашего нет
+**Do not upgrade `electron-builder` to 24.13.2+ without testing reinstalls.**
+24.13.2 introduced a regression (PR #8059): when reinstalling over an older
+version, the installer gets stuck on “*… cannot be closed*”, even when the app
+is closed and nothing of ours is in Task Manager
 ([issue #8131](https://github.com/electron-userland/electron-builder/issues/8131)).
-Поэтому в `package.json` версия зафиксирована точно как `24.13.1` (последняя рабочая),
-а не через `^`. Хук `assets/nsis-hooks.nsh` дополнительно принудительно закрывает
-приложение и ffmpeg перед установкой.
+That is why `package.json` pins the version exactly as `24.13.1` (the last
+working one) rather than via `^`. The `assets/nsis-hooks.nsh` hook additionally
+force-closes the app and ffmpeg before installing.
 
-Иконки: electron-builder берёт `assets/icon.icns` (macOS) и `assets/icon.ico`
-(Windows). В репозитории лежит исходный `assets/icon.svg` — на его основе можно
-сгенерировать нужные форматы (например, через `electron-icon-builder` или онлайн-
-конвертер). Если файлов иконок нет, используется стандартная иконка Electron.
+Icons: electron-builder uses `assets/icon.icns` (macOS) and `assets/icon.ico`
+(Windows). The repository ships the source `assets/icon.svg` — from it you can
+generate the needed formats (for example, via `electron-icon-builder` or an
+online converter). If the icon files are missing, the default Electron icon is
+used.
 
-## Структура проекта
+## Project structure
 
 ```
 video-converter/
-├── package.json                  # зависимости, скрипты, конфиг electron-builder
+├── package.json                 # dependencies, scripts, electron-builder config
 ├── src/
 │   ├── main/
-│   │   ├── main.js               # основной процесс: окно, меню, IPC
-│   │   ├── preload.js            # безопасный мост (contextBridge)
-│   │   └── converter.js          # ядро: FFmpeg, форматы, пресеты, probe
+│   │   ├── main.js              # main process: window, menu, IPC
+│   │   ├── preload.js           # secure bridge (contextBridge)
+│   │   └── converter.js         # core: FFmpeg, formats, presets, probe
 │   └── renderer/
-│       ├── index.html            # разметка интерфейса
-│       ├── styles.css            # оформление, светлая и тёмная темы
-│       ├── i18n.js               # переводы и переключение языка (8 языков)
-│       ├── theme.js              # управление темой (system / light / dark)
-│       └── renderer.js           # логика UI, очередь, прогресс
+│       ├── index.html           # UI markup
+│       ├── styles.css           # styling, light and dark themes
+│       ├── i18n.js              # translations & language switching (8 languages)
+│       ├── theme.js             # theme management (system / light / dark)
+│       └── renderer.js          # UI logic, queue, progress
 ├── scripts/
-│   └── smoke-test.js             # проверка конвертации из командной строки
+│   ├── fetch-ffmpeg.js          # swaps the ffmpeg binary per target arch
+│   └── smoke-test.js            # command-line conversion check
 └── assets/
-    └── icon.svg                  # исходная иконка приложения
+    ├── icon.svg                 # source app icon
+    └── nsis-hooks.nsh           # NSIS installer hooks (force-close app/ffmpeg)
 ```
 
-## Как это работает
+## How it works
 
-Основной процесс (`converter.js`) вызывает FFmpeg через `fluent-ffmpeg`, подставляя
-пути к бинарникам из пакетов `ffmpeg-static` / `ffprobe-static`. Рендерер общается с
-ним только через `preload.js` (`contextIsolation: true`, `nodeIntegration: false`),
-так что интерфейс не имеет прямого доступа к файловой системе и Node API.
+The main process (`converter.js`) calls FFmpeg through `fluent-ffmpeg`, feeding
+it the binary paths from the `ffmpeg-static` / `ffprobe-static` packages. The
+renderer talks to it only through `preload.js` (`contextIsolation: true`,
+`nodeIntegration: false`), so the interface has no direct access to the file
+system or Node APIs.
 
-При упаковке в `asar` бинарники FFmpeg распаковываются в `app.asar.unpacked`
-(см. `asarUnpack` в `package.json`), а пути к ним корректируются в `converter.js`.
+When packaged into `asar`, the FFmpeg binaries are unpacked into
+`app.asar.unpacked` (see `asarUnpack` in `package.json`), and their paths are
+adjusted in `converter.js`.
 
-## Лицензия
+## License
 
-MIT. FFmpeg распространяется по своей лицензии (LGPL/GPL) — учитывайте это при
-дистрибуции.
+MIT (see the `license` field in `package.json`). FFmpeg ships under its own
+license (LGPL/GPL) — keep that in mind when distributing.

@@ -1,7 +1,7 @@
 {
   "name": "video-converter",
   "version": "1.0.0",
-  "description": "Кроссплатформенный конвертер видео (Windows и macOS) на Electron + FFmpeg",
+  "description": "Cross-platform video converter (Windows and macOS) built with Electron + FFmpeg",
   "main": "src/main/main.js",
   "author": "universe-coder",
   "license": "MIT",
