@@ -54,9 +54,8 @@ npm run smoke
 
 ```bash
 npm run dist:mac        # → dist/Video Converter-1.0.0.dmg
-npm run dist:win        # x64 puis ia32 successivement, puis ff:restore
+npm run dist:win        # construit l'installateur x64, puis ff:restore
 npm run dist:win-x64    # 64 bits uniquement :  …-win-x64-Setup.exe
-npm run dist:win-ia32   # 32 bits uniquement :  …-win-ia32-Setup.exe
 npm run pack            # build non empaqueté dans dist/ (vérification rapide)
 ```
 
@@ -65,7 +64,7 @@ npm run pack            # build non empaqueté dans dist/ (vérification rapide)
 | Architecture | Support | Remarque |
 |------|---------|----------|
 | **x64** | ✅ | cible principale — Intel/AMD 64 bits |
-| **ia32** | ✅ | Windows 32 bits (rare de nos jours) |
+| **ia32** | ❌ | `ffmpeg-static` en amont ne fournit plus de binaire ffmpeg 32 bits |
 | **arm64** | ❌ | `ffmpeg-static`/`ffprobe-static` n'ont pas de binaires Windows-ARM ; les appareils ARM exécutent le build x64 via l'émulation intégrée |
 
 **Remarque importante sur FFmpeg et les builds par architecture.**

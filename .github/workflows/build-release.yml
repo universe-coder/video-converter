@@ -20,13 +20,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # macOS: build x64 on an Intel runner so the single DMG runs on both
-          # Intel Macs (natively) and Apple Silicon (via Rosetta). ffmpeg-static
-          # only ships one arch per install, and the mac artifactName has no arch
-          # suffix, so we produce one DMG. Switch to `macos-latest` for a native
-          # arm64 build instead.
-          - os: macos-13
-            label: macOS (dmg)
+          # macOS: build on macos-latest (Apple Silicon / arm64). The older
+          # macos-13 (Intel) runners were queueing indefinitely, so we target the
+          # current runner and ship a native arm64 DMG. ffmpeg-static installs one
+          # arch per machine and the mac artifactName has no arch suffix, so this
+          # is a single arm64 DMG (runs on Apple Silicon Macs).
+          - os: macos-latest
+            label: macOS (dmg, arm64)
             build: npm run dist:mac
             artifacts: dist/*.dmg
             artifact_name: macos-dmg
