@@ -33,7 +33,10 @@ const env = { ...process.env };
 if (platform) env.npm_config_platform = platform;
 if (arch) env.npm_config_arch = arch;
 
-const target = `${platform || process.platform}-${arch || process.arch}`;
+// При запуске без аргументов (ff:restore) ориентируемся на текущую платформу.
+const effPlatform = platform || process.platform;
+const effArch = arch || process.arch;
+const target = `${effPlatform}-${effArch}`;
 console.log(`→ Загрузка ffmpeg-static для ${target}…`);
 
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -46,7 +49,7 @@ execFileSync(npm, ['rebuild', 'ffmpeg-static'], {
 });
 
 // Проверяем, что бинарник на месте.
-const expected = path.join(pkgDir, platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+const expected = path.join(pkgDir, effPlatform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
 if (!fs.existsSync(expected)) {
   console.error(`✗ Ожидался бинарник ${expected}, но его нет.`);
   process.exit(1);
