@@ -20,13 +20,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # macOS: build on macos-latest (Apple Silicon / arm64). The older
-          # macos-13 (Intel) runners were queueing indefinitely, so we target the
-          # current runner and ship a native arm64 DMG. ffmpeg-static installs one
-          # arch per machine and the mac artifactName has no arch suffix, so this
-          # is a single arm64 DMG (runs on Apple Silicon Macs).
+          # macOS: build a UNIVERSAL DMG (Intel x64 + Apple Silicon arm64) on
+          # macos-latest. `dist:mac` first lipo-merges both ffmpeg-static arches
+          # into one fat binary (see scripts/make-universal-ffmpeg.js), then runs
+          # electron-builder --universal. ffprobe-static already ships both arches.
           - os: macos-latest
-            label: macOS (dmg, arm64)
+            label: macOS (dmg, universal)
             build: npm run dist:mac
             artifacts: dist/*.dmg
             artifact_name: macos-dmg
@@ -58,6 +57,20 @@ jobs:
           # No Apple signing certificate on CI — build unsigned instead of
           # letting electron-builder try (and fail) to auto-discover an identity.
           CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      # Safety net: assert the ffmpeg binary bundled into the .app is a fat
+      # (x86_64 + arm64) binary, so the universal DMG actually runs on both archs.
+      - name: Verify universal macOS binary
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          ff=$(find dist -path '*ffmpeg-static/ffmpeg' -type f | head -1)
+          if [ -z "$ff" ]; then echo "::error::bundled ffmpeg not found in dist/"; exit 1; fi
+          echo "ffmpeg: $ff"
+          lipo -info "$ff"
+          lipo -info "$ff" | grep -q 'x86_64 arm64' || { echo "::error::bundled ffmpeg is not universal"; exit 1; }
+          app=$(find dist -path '*Contents/MacOS/*' -type f | head -1)
+          [ -n "$app" ] && { echo "app binary: $app"; lipo -info "$app" || true; }
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
