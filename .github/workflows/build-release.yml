@@ -30,10 +30,11 @@ jobs:
             build: npm run dist:mac
             artifacts: dist/*.dmg
             artifact_name: macos-dmg
-          # Windows: `dist:win` builds x64 and ia32 in turn, fetching the matching
-          # ffmpeg binary for each arch via scripts/fetch-ffmpeg.js.
+          # Windows: `dist:win` builds the x64 NSIS installer, fetching the ffmpeg
+          # binary via scripts/fetch-ffmpeg.js. 32-bit (ia32) is not built — upstream
+          # ffmpeg-static no longer publishes a win32-ia32 binary.
           - os: windows-latest
-            label: Windows (x64 + ia32)
+            label: Windows (x64)
             build: npm run dist:win
             artifacts: dist/*.exe
             artifact_name: windows-installers

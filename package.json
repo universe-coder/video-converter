@@ -12,9 +12,8 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder --publish never",
     "dist:mac": "electron-builder --mac --publish never",
-    "dist:win": "npm run dist:win-x64 && npm run dist:win-ia32 && npm run ff:restore",
+    "dist:win": "npm run dist:win-x64 && npm run ff:restore",
     "dist:win-x64": "node scripts/fetch-ffmpeg.js win32 x64 && electron-builder --win nsis --x64 --publish never",
-    "dist:win-ia32": "node scripts/fetch-ffmpeg.js win32 ia32 && electron-builder --win nsis --ia32 --publish never",
     "ff:restore": "node scripts/fetch-ffmpeg.js"
   },
   "dependencies": {
